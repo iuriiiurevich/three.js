@@ -29,6 +29,7 @@ import VaryNode from './core/VaryNode.js';
 import BufferNode from './accessors/BufferNode.js';
 import CameraNode from './accessors/CameraNode.js';
 import CubeTextureNode from './accessors/CubeTextureNode.js';
+import InstanceNode from './accessors/InstanceNode.js';
 import MaterialNode from './accessors/MaterialNode.js';
 import MaterialReferenceNode from './accessors/MaterialReferenceNode.js';
 import ModelNode from './accessors/ModelNode.js';
@@ -46,6 +47,7 @@ import UVNode from './accessors/UVNode.js';
 // display
 import ColorSpaceNode from './display/ColorSpaceNode.js';
 import NormalMapNode from './display/NormalMapNode.js';
+import ToneMappingNode from './display/ToneMappingNode.js';
 
 // math
 import MathNode from './math/MathNode.js';
@@ -120,6 +122,7 @@ const nodeLib = {
 	BufferNode,
 	CameraNode,
 	CubeTextureNode,
+	InstanceNode,
 	MaterialNode,
 	MaterialReferenceNode,
 	ModelNode,
@@ -137,6 +140,7 @@ const nodeLib = {
 	// display
 	ColorSpaceNode,
 	NormalMapNode,
+	ToneMappingNode,
 
 	// math
 	MathNode,
@@ -210,6 +214,7 @@ export {
 	BufferNode,
 	CameraNode,
 	CubeTextureNode,
+	InstanceNode,
 	MaterialNode,
 	MaterialReferenceNode,
 	ModelNode,
@@ -227,6 +232,7 @@ export {
 	// display
 	ColorSpaceNode,
 	NormalMapNode,
+	ToneMappingNode,
 
 	// math
 	MathNode,

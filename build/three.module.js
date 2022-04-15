@@ -18231,12 +18231,20 @@ function getShaderErrors( gl, shader, type ) {
 
 	if ( status && errors === '' ) return '';
 
-	const errorLine = parseInt( /ERROR: 0:(\d+)/.exec( errors )[ 1 ] );
+	const errorMatches = /ERROR: 0:(\d+)/.exec( errors );
+	if ( errorMatches ) {
 
-	// --enable-privileged-webgl-extension
-	// console.log( '**' + type + '**', gl.getExtension( 'WEBGL_debug_shaders' ).getTranslatedShaderSource( shader ) );
+		// --enable-privileged-webgl-extension
+		// console.log( '**' + type + '**', gl.getExtension( 'WEBGL_debug_shaders' ).getTranslatedShaderSource( shader ) );
 
-	return type.toUpperCase() + '\n\n' + errors + '\n\n' + handleSource( gl.getShaderSource( shader ), errorLine );
+		const errorLine = parseInt( errorMatches[ 0 ] );
+		return type.toUpperCase() + '\n\n' + errors + '\n\n' + handleSource( gl.getShaderSource( shader ), errorLine );
+
+	} else {
+
+		return errors;
+
+	}
 
 }
 
@@ -20563,7 +20571,6 @@ function WebGLLights( extensions, capabilities ) {
 
 				uniforms.direction.setFromMatrixPosition( light.matrixWorld );
 				uniforms.direction.transformDirection( viewMatrix );
-				uniforms.direction.normalize();
 
 				hemiLength ++;
 
@@ -23130,13 +23137,17 @@ function WebGLTextures( _gl, extensions, state, properties, capabilities, utils,
 
 				//
 
-				if ( useTexStorage && allocateMemory ) {
+				if ( allocateMemory ) {
 
-					state.texStorage2D( 3553, 1, glInternalFormat, image.width, image.height );
+					if ( useTexStorage ) {
 
-				} else {
+						state.texStorage2D( 3553, 1, glInternalFormat, image.width, image.height );
 
-					state.texImage2D( 3553, 0, glInternalFormat, image.width, image.height, 0, glFormat, glType, null );
+					} else {
+
+						state.texImage2D( 3553, 0, glInternalFormat, image.width, image.height, 0, glFormat, glType, null );
+
+					}
 
 				}
 
@@ -23278,13 +23289,26 @@ function WebGLTextures( _gl, extensions, state, properties, capabilities, utils,
 
 			} else if ( texture.isFramebufferTexture ) {
 
-				if ( useTexStorage && allocateMemory ) {
+				if ( allocateMemory ) {
 
-					state.texStorage2D( 3553, levels, glInternalFormat, image.width, image.height );
+					if ( useTexStorage ) {
 
-				} else {
+						state.texStorage2D( 3553, levels, glInternalFormat, image.width, image.height );
 
-					state.texImage2D( 3553, 0, glInternalFormat, image.width, image.height, 0, glFormat, glType, null );
+					} else {
+
+						let width = image.width, height = image.height;
+
+						for ( let i = 0; i < levels; i ++ ) {
+
+							state.texImage2D( 3553, i, glInternalFormat, width, height, 0, glFormat, glType, null );
+
+							width >>= 1;
+							height >>= 1;
+
+						}
+
+					}
 
 				}
 
@@ -27262,7 +27286,7 @@ function WebGLRenderer( parameters = {} ) {
 
 			_transmissionRenderTarget = new WebGLRenderTarget( 1, 1, {
 				generateMipmaps: true,
-				type: utils.convert( HalfFloatType ) !== null ? HalfFloatType : UnsignedByteType,
+				type: extensions.has( 'EXT_color_buffer_half_float' ) ? HalfFloatType : UnsignedByteType,
 				minFilter: LinearMipmapLinearFilter,
 				samples: ( isWebGL2 && _antialias === true ) ? 4 : 0
 			} );

@@ -13944,10 +13944,16 @@ function getShaderErrors(gl, shader, type) {
 	const status = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
 	const errors = gl.getShaderInfoLog(shader).trim();
 	if (status && errors === '') return '';
-	const errorLine = parseInt(/ERROR: 0:(\d+)/.exec(errors)[1]); // --enable-privileged-webgl-extension
-	// console.log( '**' + type + '**', gl.getExtension( 'WEBGL_debug_shaders' ).getTranslatedShaderSource( shader ) );
+	const errorMatches = /ERROR: 0:(\d+)/.exec(errors);
 
-	return type.toUpperCase() + '\n\n' + errors + '\n\n' + handleSource(gl.getShaderSource(shader), errorLine);
+	if (errorMatches) {
+		// --enable-privileged-webgl-extension
+		// console.log( '**' + type + '**', gl.getExtension( 'WEBGL_debug_shaders' ).getTranslatedShaderSource( shader ) );
+		const errorLine = parseInt(errorMatches[0]);
+		return type.toUpperCase() + '\n\n' + errors + '\n\n' + handleSource(gl.getShaderSource(shader), errorLine);
+	} else {
+		return errors;
+	}
 }
 
 function getTexelEncodingFunction(functionName, encoding) {
@@ -15374,7 +15380,6 @@ function WebGLLights(extensions, capabilities) {
 				const uniforms = state.hemi[hemiLength];
 				uniforms.direction.setFromMatrixPosition(light.matrixWorld);
 				uniforms.direction.transformDirection(viewMatrix);
-				uniforms.direction.normalize();
 				hemiLength++;
 			}
 		}
@@ -17149,10 +17154,12 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
 				} //
 
 
-				if (useTexStorage && allocateMemory) {
-					state.texStorage2D(_gl.TEXTURE_2D, 1, glInternalFormat, image.width, image.height);
-				} else {
-					state.texImage2D(_gl.TEXTURE_2D, 0, glInternalFormat, image.width, image.height, 0, glFormat, glType, null);
+				if (allocateMemory) {
+					if (useTexStorage) {
+						state.texStorage2D(_gl.TEXTURE_2D, 1, glInternalFormat, image.width, image.height);
+					} else {
+						state.texImage2D(_gl.TEXTURE_2D, 0, glInternalFormat, image.width, image.height, 0, glFormat, glType, null);
+					}
 				}
 			} else if (texture.isDataTexture) {
 				// use manually created mipmaps if available
@@ -17232,10 +17239,19 @@ function WebGLTextures(_gl, extensions, state, properties, capabilities, utils, 
 					state.texImage3D(_gl.TEXTURE_3D, 0, glInternalFormat, image.width, image.height, image.depth, 0, glFormat, glType, image.data);
 				}
 			} else if (texture.isFramebufferTexture) {
-				if (useTexStorage && allocateMemory) {
-					state.texStorage2D(_gl.TEXTURE_2D, levels, glInternalFormat, image.width, image.height);
-				} else {
-					state.texImage2D(_gl.TEXTURE_2D, 0, glInternalFormat, image.width, image.height, 0, glFormat, glType, null);
+				if (allocateMemory) {
+					if (useTexStorage) {
+						state.texStorage2D(_gl.TEXTURE_2D, levels, glInternalFormat, image.width, image.height);
+					} else {
+						let width = image.width,
+								height = image.height;
+
+						for (let i = 0; i < levels; i++) {
+							state.texImage2D(_gl.TEXTURE_2D, i, glInternalFormat, width, height, 0, glFormat, glType, null);
+							width >>= 1;
+							height >>= 1;
+						}
+					}
 				}
 			} else {
 				// regular Texture (image, video, canvas)
@@ -19961,7 +19977,7 @@ function WebGLRenderer(parameters = {}) {
 		if (_transmissionRenderTarget === null) {
 			_transmissionRenderTarget = new WebGLRenderTarget(1, 1, {
 				generateMipmaps: true,
-				type: utils.convert(HalfFloatType) !== null ? HalfFloatType : UnsignedByteType,
+				type: extensions.has('EXT_color_buffer_half_float') ? HalfFloatType : UnsignedByteType,
 				minFilter: LinearMipmapLinearFilter,
 				samples: isWebGL2 && _antialias === true ? 4 : 0
 			});

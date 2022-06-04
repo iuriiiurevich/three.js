@@ -3,6 +3,7 @@ import LineBasicNodeMaterial from './LineBasicNodeMaterial.js';
 import MeshBasicNodeMaterial from './MeshBasicNodeMaterial.js';
 import MeshStandardNodeMaterial from './MeshStandardNodeMaterial.js';
 import PointsNodeMaterial from './PointsNodeMaterial.js';
+import SpriteNodeMaterial from './SpriteNodeMaterial.js';
 import { Material } from 'three';
 
 export {
@@ -10,7 +11,8 @@ export {
 	LineBasicNodeMaterial,
 	MeshBasicNodeMaterial,
 	MeshStandardNodeMaterial,
-	PointsNodeMaterial
+	PointsNodeMaterial,
+	SpriteNodeMaterial
 };
 
 const materialLib = {
@@ -18,7 +20,8 @@ const materialLib = {
 	LineBasicNodeMaterial,
 	MeshBasicNodeMaterial,
 	MeshStandardNodeMaterial,
-	PointsNodeMaterial
+	PointsNodeMaterial,
+	SpriteNodeMaterial
 };
 
 const fromTypeFunction = Material.fromType;
@@ -47,7 +50,7 @@ NodeMaterial.fromMaterial = function ( material ) {
 
 	const nodeMaterial = new materialLib[ type ]( material );
 
-	for ( let key in material ) {
+	for ( const key in material ) {
 
 		if ( nodeMaterial[ key ] === undefined ) {
 
